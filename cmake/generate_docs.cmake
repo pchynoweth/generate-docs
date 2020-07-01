@@ -12,7 +12,7 @@ function(generate_docs TARGET)
         list(APPEND OUTPUT_FILES ${OUTPUT_FILE})
 
         add_custom_command(OUTPUT ${OUTPUT_FILE}
-            COMMAND python ${TRANSFORM_SCRIPT} -i ${FILE_PATH} -o ${OUTPUT_FILE}
+            COMMAND ${PYTHON} ${TRANSFORM_SCRIPT} -i ${FILE_PATH} -o ${OUTPUT_FILE}
             DEPENDS ${FILE_PATH} ${PROJECT_BINARY_DIR}/docs/)
     endforeach()
 
