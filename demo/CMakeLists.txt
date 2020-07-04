@@ -1,6 +1,6 @@
 project(demo)
 
-file(GLOB PYTHON_FILES *.py)
+file(GLOB SOURCES *.py *.txt *.md)
 
 generate_docs(${PROJECT_NAME}
-    PYTHON_SOURCES ${PYTHON_FILES})
+    SOURCES ${SOURCES})
