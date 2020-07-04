@@ -3,6 +3,7 @@ import argparse
 import os
 import sys
 import importlib
+import yaml
 
 parser = argparse.ArgumentParser(description='File transformer')
 parser.add_argument('--input', '-i', type=str, required=True)
@@ -10,17 +11,24 @@ parser.add_argument('--output', '-o', type=str)
 args = parser.parse_args()
 
 def transform(handler) -> None:
+    if not hasattr(handler, 'frontmatter'):
+        raise ValueError('All docs must contain frontmatter')
+    fm = handler.frontmatter()
+    metadata = '---\n' + yaml.dump(fm) + '---'
+    chunks = [ metadata ]
     if hasattr(handler, 'generator'):
         for line in handler.generator():
-            return line
+            chunks.append(line)
     elif hasattr(handler, 'dump'):
-        return handler.dump()
+        chunks.append(handler.dump())
     elif hasattr(handler, 'coroutine'):
         async def runner(task):
             return await task
-        return asyncio.run(runner(handler.coroutine()))
+        chunks.append(asyncio.run(runner(handler.coroutine())))
     else:
         raise ValueError('Unsupported handler')
+
+    return '\n'.join(chunks)
 
 if args.output is None:
     args.output, _ = os.path.splitext(args.input)

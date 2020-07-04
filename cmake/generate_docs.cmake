@@ -1,5 +1,22 @@
 file(GLOB TRANSFORM_SCRIPT ./scripts/transform.py)
 
+set(CONFLUENCE_COOKIE ${CMAKE_BINARY_DIR}/confluence.cookie)
+message(STATUS ${CONFLUENCE_COOKIE})
+
+add_custom_target(create_confluence_cookie
+    COMMAND markdown-to-confluence --space CD --user admin --save-cookie ${CONFLUENCE_COOKIE}
+    BYPRODUCTS ${CONFLUENCE_COOKIE}
+    USES_TERMINAL
+)
+
+function(upload_docs PROJECT)
+    cmake_parse_arguments(UPLOAD "" "" "SOURCES" ${ARGN})
+
+    add_custom_target(${PROJECT}_upload_docs
+        COMMAND markdown-to-confluence --force --space CD --cookie-file ${CONFLUENCE_COOKIE} ${UPLOAD_SOURCES}
+        DEPENDS ${UPLOAD_SOURCES} ${CONFLUENCE_COOKIE})
+endfunction()
+
 function(generate_docs PROJECT)
     cmake_parse_arguments(GEN "" "" "SOURCES" ${ARGN})
 
@@ -36,4 +53,7 @@ function(generate_docs PROJECT)
     add_custom_target(${PROJECT}_generate_docs
         ALL
         DEPENDS ${OUTPUT_FILES})
+
+    upload_docs(${PROJECT}
+        SOURCES ${OUTPUT_FILES})
 endfunction()
